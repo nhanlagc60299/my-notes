@@ -1,6 +1,26 @@
 # CLAUDE.md — cách dạy trong repo này
 
-Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ thuật giữ tiếng Anh. Dùng analogy hệ thống/vận hành; không giải thích lại Python/Linux/K8s/CI-CD từ số 0. Sparring mode: hỏi trước, đưa đáp án sau.
+Repo này là nơi người học tự học công nghệ theo phương pháp 20 giờ (Kaufman). **Mọi session, kể cả session mới không có lịch sử chat, phải dạy tiếp được chỉ từ file trong repo.** Trạng thái nằm ở `learning/` (lộ trình, Log, Buổi kế), `topics/<topic>/notebook/` (sổ ôn tập) và test `@pytest.mark.next`.
+
+Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ thuật giữ tiếng Anh. Dùng analogy hệ thống/vận hành; không giải thích lại Python/Linux/K8s/CI-CD từ số 0. Sparring mode: hỏi trước, đưa đáp án sau. Học ngẫu hứng, không lịch cố định.
+
+## Đầu mỗi session
+
+1. Đọc khối **"Trạng thái học"** mà SessionStart hook (`.claude/hooks/session-start.sh`) in vào ngữ cảnh. Không thấy thì chạy `python3 scripts/status.py`. Khối này cho biết chủ đề, Buổi kế, Bước tiếp theo, tiến độ, dòng Log cuối, test `next` và số câu ❌ cần ôn.
+2. Người học nói gì thì làm theo bảng dưới. Chưa nói gì rõ ràng (chỉ chào, hỏi "làm gì đây") thì tóm trạng thái trong **3 dòng** rồi hỏi một câu: "Học tiếp buổi N (~45 phút) hay phiên mini 15 phút?"
+
+| Người học nói | Làm gì |
+|---|---|
+| "học tiếp", "buổi N", "hôm nay học gì" | Mục **"học tiếp"** bên dưới, vào thẳng bài |
+| "ôn tập", "ôn bài", "kiểm tra tôi" | Hỏi lần lượt các câu ❌ trong sổ ôn tập, rồi câu `Tự kiểm tra` của flashcard thuộc buổi đã học; người học trả lời xong mới chấm. Ghi kết quả vào sổ ôn tập (file của buổi gần nhất, mục "Ôn tập <ngày>") và log thành dòng `N·mini` |
+| "quiz", "checkpoint" | Bước 5 bên dưới |
+| Hỏi một khái niệm | Giải thích theo cấu trúc flashcard (nói đơn giản → ví dụ đời thường → liên tưởng SRE), có nguồn; cuối cùng hỏi lại 1 câu để người học tự diễn đạt |
+| Việc khác ngoài học | Làm bình thường, không ép vào buổi học |
+
+3. Môi trường:
+   - **Cloud session (claude.ai/code):** không có Ollama. Hook đã tạo `topics/<topic>/lab/.venv` và đưa vào `PATH`, nên `pytest -q` chạy được ngay, offline bằng `FakeLLM`. Bước cần `LLM_BACKEND=ollama` thì nhờ người học chạy trên máy mình rồi dán output vào chat, hoặc dời sang phiên chạy local.
+   - **Máy người học:** có Ollama với `gemma4`. Lệnh `hoc` (`scripts/hoc.sh`) vào lab, bật `.venv`, chạy test và in Buổi kế.
+4. Nếu có skill `learn-in-20-hours` thì cùng tinh thần, nhưng khi khác nhau thì **CLAUDE.md này thắng**.
 
 ## "học tiếp" / "buổi N" / "hôm nay học gì"
 
@@ -17,6 +37,7 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
    - **Dừng khi đã biết bước tiếp theo:** để lại đúng **1 test đỏ** gắn `@pytest.mark.next` cho bước đầu tiên của buổi sau (`pytest.ini` loại mark này khỏi lần chạy mặc định nên `pytest -q` vẫn xanh), và ghi dòng `> **Bước tiếp theo:** …` ngay dưới **Buổi kế**. Không bao giờ để quá 1 test `next`.
    - **Ghi sổ ôn tập (bắt buộc, kể cả phiên mini):** sau mọi lần kiểm tra trong buổi (câu khởi động, câu hỏi khi giảng, quiz), Claude ghi `topics/<topic>/notebook/NN-<ten-buoi>.md` theo `templates/notebook.md`: mỗi câu hỏi viết đủ để đọc lại vẫn hiểu, câu trả lời **nguyên văn** của người học, ✅/❌, đáp án giấu trong `<details>`, vì sao sai và nguồn; thêm bảng lỗi gặp khi code và các lệnh đã dùng. Phiên mini thì ghi thêm vào file của buổi đó. Thêm hoặc cập nhật dòng trong bảng `notebook/README.md`. Sổ này là bản ghi kiểm tra để người học ôn lúc rảnh, không thay cho 3 câu tự viết. `pytest -q` sẽ đỏ nếu buổi đã log mà thiếu sổ.
    - Chạy `python3 scripts/progress.py --write` để cập nhật thanh tiến độ (README + file lộ trình). Không thêm streak hay đếm ngày liên tục.
+   - **Đưa lên `main`:** commit, push branch, mở PR và hỏi người học có merge không. Email hằng ngày và session sau đọc Log từ `main`, nên PR chưa merge thì email sẽ nhắc "chững" sai; nói rõ điều này khi hỏi.
 5. Buổi checkpoint: làm quiz trong `topics/<topic>/quizzes/`; ghi toàn bộ câu hỏi và câu trả lời vào sổ ôn tập; câu sai thì ghi vào cột gap và thêm flashcard mới vào cuối `flashcards.md`. Câu đã sai 2 lần ở sổ ôn tập cũng thành flashcard.
 
 ## Viết flashcard
