@@ -4,7 +4,7 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
 
 ## "học tiếp" / "buổi N" / "hôm nay học gì"
 
-1. Đọc `learning/<topic>-20h.md` → lấy dòng **Buổi kế** → vào thẳng bài. Không hỏi lại intake, không tóm tắt lại curriculum.
+1. Đọc file lộ trình `learning/<topic>-<N>h.md` (vd: `learning/ai-agents-40h.md`) → lấy dòng **Buổi kế** → vào thẳng bài. Không hỏi lại intake, không tóm tắt lại curriculum.
 2. Mở đầu ≤ 2 phút (mục tiêu buổi + gap buổi trước), giảng ≤ 10 phút rồi để người học gõ.
 3. Bài tập: file `topics/<topic>/lab/NN_<ten>.py` + `tests/test_NN_<ten>.py`; ưu tiên mở rộng code đang chạy. Người học sai thì chỉ đúng chỗ sai và lý do, **không đưa đáp án trước khi họ thử ít nhất một lần**.
 4. Kết buổi: thêm dòng vào bảng Log (buổi | ngày | giờ tích luỹ | pass? | gap), cập nhật dòng **Buổi kế** (file nào, lệnh nào, mục tiêu gì), đảm bảo `pytest -q` xanh, commit.

@@ -8,6 +8,6 @@ Tạo quy trình mới: copy [`templates/process.md`](../templates/process.md) �
 
 | Quy trình | Nguồn | Liên quan chủ đề |
 |---|---|---|
-| *(chưa có)* | | |
+| [Incident response cho hệ thống GenAI](genai-incident-response.md) | Google SRE Book ch.14, SRE Workbook, khoá Reliability/SLO GenAI (đã đối chiếu) | AI Agents (Khối 14), Observability |
 
 Gợi ý quy trình đầu tiên, sinh ra từ 20h AI Agents: **"Review một AI agent trước khi lên production"**: checklist gồm 8 mảnh (guardrails, HITL, eval gate, budget…). Viết ở buổi 27 (retro).

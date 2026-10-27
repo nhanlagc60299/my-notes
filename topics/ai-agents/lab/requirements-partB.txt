@@ -1,0 +1,10 @@
+# Phần B (giờ 20 → 42) — cài ở đầu buổi 28. Version đã kiểm chứng API ngày 2026-10-28.
+-r requirements.txt
+llama-index-core==0.14.25
+llama-index-llms-ollama==0.11.0
+llama-index-embeddings-ollama==0.10.0
+llama-index-retrievers-bm25==0.8.0          # BM25 (dùng bm25s bên dưới)
+llama-index-vector-stores-qdrant==0.10.4
+qdrant-client==1.20.0                       # Qdrant local mode: QdrantClient(path=...) — không cần server
+# Buổi 38 (reranker cross-encoder chạy local, nặng vì kéo theo PyTorch):
+#   pip install sentence-transformers==6.2.0
