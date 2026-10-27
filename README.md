@@ -50,4 +50,6 @@ Dùng `source` để shell của anh giữ được `cd` và venv. Gõ `hoc` cho
 
 Rồi mở Claude ngay trong thư mục đó và gõ **"học tiếp"** (hoặc "buổi N"). Claude đọc [CLAUDE.md](CLAUDE.md), tìm dòng "Buổi kế" rồi vào bài ngay. Chỉ có 10–15 phút thì vẫn làm: phiên mini cũng tính giờ.
 
+**Mở session mới ở đâu cũng được** (máy mình, hoặc claude.ai/code trên điện thoại): SessionStart hook cài dependency (khi chạy trên cloud) và in **"Trạng thái học"** (`python3 scripts/status.py`) để Claude biết ngay buổi kế, bước tiếp theo và câu cần ôn. Gõ "học tiếp", "ôn tập" hoặc "quiz" là bắt đầu. Trên cloud không có Ollama, nên bước nào cần model thật thì chạy trên máy mình rồi dán output vào chat.
+
 Tiến độ đo bằng **giờ tích luỹ** (`python3 scripts/progress.py`), không đếm chuỗi ngày liên tục.

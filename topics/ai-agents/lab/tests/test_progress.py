@@ -27,3 +27,12 @@ def test_bars_in_readme_and_plan_are_current():
     current = pg.topic_bar("ai-agents")
     assert current in (pg.REPO / "README.md").read_text(encoding="utf-8")
     assert current in pg.plan_file("ai-agents").read_text(encoding="utf-8")
+
+
+def test_status_tells_a_fresh_session_what_to_teach():
+    spec2 = importlib.util.spec_from_file_location("status", SCRIPT.parent / "status.py")
+    st = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(st)
+    out = st.status("ai-agents")
+    for must in ("Buổi kế:", "Tiến độ:", "Dòng Log cuối:", "Test `next`", "Câu ❌"):
+        assert must in out
