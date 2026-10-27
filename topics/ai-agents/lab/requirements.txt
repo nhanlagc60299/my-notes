@@ -1,0 +1,7 @@
+# Pin đúng version đã kiểm chứng API (2026-10-27). Nâng version = đọc changelog trước.
+ollama==0.6.3
+pydantic==2.14.1
+pytest==9.1.1
+# Cài sẵn từ đầu để buổi sau không vướng setup (Kaufman bước 3: remove barriers)
+langgraph==1.2.18        # Khối Planning trở đi
+mcp==2.3.0               # Buổi MCP — lưu ý: 2.x đổi FastMCP -> MCPServer
