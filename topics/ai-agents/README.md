@@ -65,6 +65,7 @@ mindmap
 | [`notes/`](notes/) | 1 file / mảnh: định nghĩa, analogy SRE, cốt lõi **đã kiểm chứng** (kèm nguồn), ghi chú của tôi |
 | [`lab/`](lab/) | Mini-project chạy được: `NN_<ten>.py` + `tests/`, `pytest -q` xanh offline |
 | [`quizzes/`](quizzes/) | Bài test cuối mỗi chặng (đáp án ẩn) |
+| [`notebook/`](notebook/) | **Sổ ôn tập**: mỗi buổi một file ghi lại mọi câu đã kiểm tra, câu anh trả lời, đáp án (giấu để tự nhớ lại trước), lỗi gặp khi code |
 | [`flashcards.md`](flashcards.md) | 81 thẻ khái niệm (Cấp 1 → 7), gửi 3 thẻ/ngày qua Gmail |
 | [`references/`](references/) | Báo cáo đối chiếu các khoá học với docs/chuẩn chính thức (đúng / sai / lỗi thời) |
 | [`diagrams/`](diagrams/) | Sơ đồ Archify (HTML tương tác + JSON nguồn + PNG preview) |

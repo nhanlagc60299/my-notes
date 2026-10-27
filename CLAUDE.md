@@ -5,7 +5,7 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
 ## "học tiếp" / "buổi N" / "hôm nay học gì"
 
 1. Đọc file lộ trình `learning/<topic>-<N>h.md` (vd: `learning/ai-agents-40h.md`) → lấy dòng **Buổi kế** → vào thẳng bài. Không hỏi lại intake, không tóm tắt lại curriculum.
-2. **Khởi động (≤ 3 phút):** hỏi 2–3 câu tự nhớ lại lấy từ cột gap trong Log và thẻ của buổi trước; người học trả lời xong mới nói đáp án. Bước này quan trọng nhất sau những lần nghỉ dài. Sau đó nêu mục tiêu buổi, giảng ≤ 10 phút rồi để người học gõ.
+2. **Khởi động (≤ 3 phút):** hỏi 2–3 câu tự nhớ lại, ưu tiên câu ❌ trong `topics/<topic>/notebook/` của các buổi trước, rồi tới cột gap trong Log và thẻ của buổi trước; người học trả lời xong mới nói đáp án. Bước này quan trọng nhất sau những lần nghỉ dài. Sau đó nêu mục tiêu buổi, giảng ≤ 10 phút rồi để người học gõ.
    - Người học chỉ có 10–15 phút → làm **phiên mini** (một phần của buổi), vẫn log và tính giờ.
    - Có test `@pytest.mark.next` (thấy khi chạy `hoc` hoặc `pytest -m next`) → đó là việc đầu tiên: làm nó xanh rồi xoá mark.
    - Quay lại sau thời gian nghỉ: **không** nhắc đã nghỉ bao lâu, không trách, không "ôn lại từ đầu"; cứ khởi động rồi vào bài. (Wohl, Pychyl & Bennett 2010: sinh viên tự tha thứ cho lần trì hoãn trước thì trì hoãn ít hơn ở lần thi sau; nghiên cứu tương quan, 1 mẫu.)
@@ -15,8 +15,9 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
    - Phần thuộc Python/Linux/K8s/CI-CD thì để tự làm, chỉ chỉ chỗ sai và lý do.
 4. Kết buổi: người học **tự viết 3 câu** bằng lời của mình vào mục "Ghi chú của tôi" của note tương ứng (Claude không viết hộ, chỉ sửa chỗ sai: note viết sẵn dễ tạo ảo giác "mình hiểu rồi"). Thêm dòng vào bảng Log (buổi | ngày | giờ tích luỹ | pass? | gap; phiên mini ghi `N·mini`, pass `—`), cập nhật dòng **Buổi kế** (file nào, lệnh nào, mục tiêu gì), đảm bảo `pytest -q` xanh, commit.
    - **Dừng khi đã biết bước tiếp theo:** để lại đúng **1 test đỏ** gắn `@pytest.mark.next` cho bước đầu tiên của buổi sau (`pytest.ini` loại mark này khỏi lần chạy mặc định nên `pytest -q` vẫn xanh), và ghi dòng `> **Bước tiếp theo:** …` ngay dưới **Buổi kế**. Không bao giờ để quá 1 test `next`.
+   - **Ghi sổ ôn tập (bắt buộc, kể cả phiên mini):** sau mọi lần kiểm tra trong buổi (câu khởi động, câu hỏi khi giảng, quiz), Claude ghi `topics/<topic>/notebook/NN-<ten-buoi>.md` theo `templates/notebook.md`: mỗi câu hỏi viết đủ để đọc lại vẫn hiểu, câu trả lời **nguyên văn** của người học, ✅/❌, đáp án giấu trong `<details>`, vì sao sai và nguồn; thêm bảng lỗi gặp khi code và các lệnh đã dùng. Phiên mini thì ghi thêm vào file của buổi đó. Thêm hoặc cập nhật dòng trong bảng `notebook/README.md`. Sổ này là bản ghi kiểm tra để người học ôn lúc rảnh, không thay cho 3 câu tự viết. `pytest -q` sẽ đỏ nếu buổi đã log mà thiếu sổ.
    - Chạy `python3 scripts/progress.py --write` để cập nhật thanh tiến độ (README + file lộ trình). Không thêm streak hay đếm ngày liên tục.
-5. Buổi checkpoint: làm quiz trong `topics/<topic>/quizzes/`; câu sai thì ghi vào cột gap và thêm flashcard mới vào cuối `flashcards.md`.
+5. Buổi checkpoint: làm quiz trong `topics/<topic>/quizzes/`; ghi toàn bộ câu hỏi và câu trả lời vào sổ ôn tập; câu sai thì ghi vào cột gap và thêm flashcard mới vào cuối `flashcards.md`. Câu đã sai 2 lần ở sổ ôn tập cũng thành flashcard.
 
 ## Viết flashcard
 
