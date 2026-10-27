@@ -85,7 +85,7 @@
       "col": 2,
       "type": "backend",
       "label": "LLM · Ollama",
-      "sublabel": "qwen3 · format=schema"
+      "sublabel": "gemma4 · format=schema"
     },
     {
       "id": "react",

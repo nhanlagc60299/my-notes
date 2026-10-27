@@ -16,7 +16,7 @@ from typing import Callable, Sequence
 
 from ollama import ChatResponse, Client, Message
 
-DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "qwen3")  # model dùng trong docs tool-calling chính thức
+DEFAULT_MODEL = os.getenv("OLLAMA_MODEL", "gemma4")  # có tool calling trong Ollama (model/parsers/gemma4.go)
 
 
 class OllamaLLM:

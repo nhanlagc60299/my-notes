@@ -10,6 +10,12 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
 4. Kết buổi: thêm dòng vào bảng Log (buổi | ngày | giờ tích luỹ | pass? | gap), cập nhật dòng **Buổi kế** (file nào, lệnh nào, mục tiêu gì), đảm bảo `pytest -q` xanh, commit.
 5. Buổi checkpoint: làm quiz trong `topics/<topic>/quizzes/`; câu sai thì ghi vào cột gap và thêm flashcard mới vào cuối `flashcards.md`.
 
+## Viết flashcard
+
+- Mỗi thẻ dạy **một khái niệm** (LLM, HITL, OBO…), viết cho **người mới hoàn toàn**: giải nghĩa mọi từ viết tắt, không giả định kiến thức trước, câu đầy đủ, không viết kiểu đố mẹo hay chỉ ghi tên hàm.
+- Đúng cấu trúc trong đầu `flashcards.md` (Cấp → Nói đơn giản → Ví dụ đời thường → Trong agent email → Liên tưởng SRE → Nhớ → Tự kiểm tra → Đáp → Nguồn). Thứ tự trong file đi từ cơ bản lên nâng cao.
+- Sau khi sửa, chạy `python3 topics/ai-agents/scripts/flashcard_email.py --date <YYYY-MM-DD> --html-out /tmp/x.html` để kiểm tra thẻ parse đủ trường.
+
 ## Kiểm chứng (bắt buộc)
 
 - Docs chính thức trước, tutorial/blog sau. Nếu WebFetch bị chặn domain docs: lấy source docs trên GitHub raw (`ollama/ollama/docs/`, `langchain-ai/docs/src/oss/`, `modelcontextprotocol/modelcontextprotocol/docs/`), hoặc `inspect.signature` trên đúng version đã pin trong `requirements.txt`.
