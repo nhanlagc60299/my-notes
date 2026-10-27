@@ -1,10 +1,12 @@
 # Flashcards — AI Agents: từ điển khái niệm, từ số 0 đến nâng cao
 
-Mỗi sáng một scheduled task gửi **3 thẻ** qua Gmail, theo thứ tự trong file. Bộ thẻ đi từ **Cấp 1** (chưa biết gì) lên **Cấp 7** (model access & output có cấu trúc). Hết bộ thì quay vòng lại, lần thứ hai là ôn tập.
+Mỗi sáng một scheduled task gửi **3 thẻ** qua Gmail, chỉ lấy thẻ của các buổi **đã học** (theo bảng Log): 1 thẻ buổi gần nhất cộng 2 thẻ cũ để ôn. Câu hỏi nằm ở đầu email, đáp án ở cuối. Bộ thẻ đi từ **Cấp 1** (chưa biết gì) lên **Cấp 7** (model access & output có cấu trúc).
 
 Mỗi thẻ dạy **một khái niệm**, viết cho người mới hoàn toàn: thuật ngữ viết tắt được giải nghĩa, không giả định kiến thức trước, có ví dụ đời thường. Đọc một thẻ mất khoảng 2 phút.
 
 **Quy ước** (để script render email đọc được): heading `### FC-NN · <Thuật ngữ> — <nghĩa ngắn>`, sau đó là các dòng theo đúng thứ tự `**Cấp:**`, `**Nói đơn giản:**`, `**Ví dụ đời thường:**`, `**Trong agent email:**`, `**Liên tưởng SRE:**`, `**Nhớ:**`, `**Tự kiểm tra:**`, `**Đáp:**`, `**Nguồn:**`. Thẻ mới thì nối vào cuối, đánh số tiếp.
+
+Đầu mỗi email có thêm **1 câu truyền cảm hứng** về học tập, AI, design và system thinking, lấy từ [`quotes.md`](quotes.md). Chỉ thêm câu đã truy được nguồn gốc.
 
 | Cấp | Chủ đề | Thẻ |
 |---|---|---|

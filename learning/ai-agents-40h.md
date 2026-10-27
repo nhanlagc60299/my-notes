@@ -11,7 +11,7 @@
 |---|---|
 | **Bắt đầu** | 2026-10-27 |
 | **Target deliverable** | Email Triage Agent cho inbox SRE, chạy **local** bằng Ollama, đủ 8 mảnh: Brain · Tools · Planning · Memory · Environment · Guardrails · Observability · Cost |
-| **Nhịp** | Ngẫu hứng, ≥ 40 phút/buổi, ~4–5 buổi/tuần. Không fix lịch — log theo **giờ tích luỹ**, không theo ngày. |
+| **Nhịp** | Ngẫu hứng, không fix lịch. **Phiên mini 10–15 phút** (ôn 3 thẻ, làm 1 câu quiz, chạy 1 test, sửa 1 hàm) **vẫn tính** vào giờ tích luỹ; một buổi trong curriculum có thể chia thành nhiều phiên mini. Log theo **giờ tích luỹ**, không theo ngày. Ít mà đều tốt hơn nhiều mà bỏ. |
 | **LLM** | Ollama local **`gemma4`** (anh đã có sẵn; có tool calling + structured output theo source/docs Ollama). Đổi model bằng `OLLAMA_MODEL`. Test luôn chạy offline bằng `FakeLLM`. |
 | **Dữ liệu** | 30 email tự tạo + 6 runbook public (Apache-2.0) + bộ câu hỏi retrieval tự tạo (`data/retrieval_golden.jsonl`). Không dữ liệu nội bộ công ty. |
 | **Stack Phần B** | LlamaIndex (`llama-index-core 0.14.25`) + Ollama (`gemma4`, `embeddinggemma`) + BM25 + Qdrant **local mode** + reranker cross-encoder local. Không gửi dữ liệu ra API ngoài (khoá học dùng OpenAI/Cohere/Qdrant Cloud). |
@@ -264,6 +264,8 @@ ollama pull embeddinggemma                # model embedding dùng trong docs Oll
 | 56 | Eval toàn phần (Phần A gate + retrieval gate + test bảo mật + chaos nhẹ) + retro + viết quy trình **"Review RAG/agent trước production"** vào `processes/` | Tất cả xanh; retro và process được commit |
 
 ## Log
+
+Phiên mini ghi thành dòng riêng với cột Buổi dạng `N·mini` (vd: `3·mini`), cột Pass để `—`; chỉ dòng có ✅ mới được tính là "đã xong buổi" (email flashcard dựa vào đây để biết gửi thẻ nào).
 
 | Buổi | Ngày | Giờ tích luỹ | Pass? | Gap / ghi chú |
 |---|---|---|---|---|

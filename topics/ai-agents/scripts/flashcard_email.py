@@ -2,9 +2,18 @@
 
     python topics/ai-agents/scripts/flashcard_email.py              # hôm nay (Asia/Ho_Chi_Minh)
     python topics/ai-agents/scripts/flashcard_email.py --date 2026-10-28 --html-out /tmp/preview.html
+    python topics/ai-agents/scripts/flashcard_email.py --done 10    # giả lập đã xong buổi 10
 
 In ra JSON {subject, html, text, cards}. Scheduled task chạy script này rồi gửi
 `html` (kèm `text` làm bản plain-text) qua Gmail — không tự soạn lại nội dung.
+
+Nguyên tắc (retrieval practice + spacing):
+- Chỉ gửi thẻ của buổi **đã học** (đọc bảng Log trong learning/ai-agents-*.md).
+  Buổi của thẻ = số buổi nhỏ nhất trong "Học ở:" ở trường Nguồn.
+- Mỗi ngày: 1 thẻ của buổi gần nhất + 2 thẻ cũ để ôn (xoay vòng theo ngày).
+- Câu hỏi ở đầu email, toàn bộ nội dung + đáp án ở cuối: tự nhớ lại trước khi xem.
+- Chưa học buổi nào có thẻ → gửi email nhắc "Buổi kế" thay vì thẻ.
+- Đầu email là 1 câu truyền cảm hứng trong quotes.md (xoay vòng theo ngày).
 """
 from __future__ import annotations
 
@@ -16,11 +25,16 @@ from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-DECK = Path(__file__).resolve().parent.parent / "flashcards.md"
+TOPIC = Path(__file__).resolve().parent.parent
+DECK = TOPIC / "flashcards.md"
+QUOTES = TOPIC / "quotes.md"
+LEARNING_DIR = TOPIC.parent.parent / "learning"
 START = date(2026, 10, 28)
 PER_DAY = 3
+LAST_LESSON = 56  # thẻ không gắn buổi cụ thể (tham khảo, chủ đề sau) chỉ gửi khi xong lộ trình
 FIELDS = ["Cấp", "Nói đơn giản", "Ví dụ đời thường", "Trong agent email", "Liên tưởng SRE", "Nhớ", "Tự kiểm tra", "Đáp", "Nguồn"]
 REPO_URL = "https://github.com/nhanlagc60299/my-notes/blob/main/topics/ai-agents/flashcards.md"
+FONT = "font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:680px;margin:auto;color:#1f2328;line-height:1.55;font-size:15px"
 
 
 def parse_deck(text: str) -> list[dict]:
@@ -34,15 +48,84 @@ def parse_deck(text: str) -> list[dict]:
         for field in FIELDS:
             fm = re.search(rf"^\*\*{re.escape(field)}:\*\*\s*(.+)$", body, flags=re.M)
             card[field] = fm.group(1).strip() if fm else ""
+        card["lesson"] = lesson_of(card["Nguồn"])
         cards.append(card)
     return cards
 
 
-def pick(cards: list[dict], day: date) -> tuple[list[dict], int]:
+def lesson_of(source: str) -> int:
+    """Buổi nhỏ nhất trong phần 'Học ở:' của Nguồn; không có số buổi thì coi là cuối lộ trình."""
+    _, _, where = source.partition("Học ở:")
+    nums = [int(n) for n in re.findall(r"(?i)buổi\s*(\d+)", where)]
+    return min(nums) if nums else LAST_LESSON
+
+
+def read_progress(learning_text: str) -> tuple[int, str]:
+    """(buổi lớn nhất đã pass trong bảng Log, dòng 'Buổi kế')."""
+    log = learning_text.split("## Log", 1)[-1].split("\n## ", 1)[0]
+    done = 0
+    for row in log.splitlines():
+        cells = [c.strip() for c in row.strip().strip("|").split("|")]
+        m = re.match(r"(\d+)", cells[0]) if cells else None
+        if m and len(cells) >= 4 and "✅" in cells[3]:
+            done = max(done, int(m.group(1)))
+    nm = re.search(r"^> \*\*Buổi kế:\s*(.+?)\*\*\s*(.*)$", learning_text, flags=re.M)
+    next_line = f"Buổi kế: {nm.group(1).strip()} {nm.group(2).strip()}".strip() if nm else "Buổi kế: xem learning/"
+    return done, re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", next_line)
+
+
+def parse_quotes(text: str) -> list[dict]:
+    quotes = []
+    for block in re.split(r"^### ", text, flags=re.M)[1:]:
+        header, _, body = block.partition("\n")
+        m = re.match(r"(Q-\d+)\s*·\s*(.+)", header.strip())
+        qm = re.search(r'^>\s*"(.+)"\s*$', body, flags=re.M)
+        if not (m and qm):
+            continue
+        q = {"id": m.group(1), "group": m.group(2).strip(), "quote": qm.group(1)}
+        for field in ("Dịch", "Tác giả", "Ý cho mình"):
+            fm = re.search(rf"^\*\*{field}:\*\*\s*(.+)$", body, flags=re.M)
+            q[field] = fm.group(1).strip() if fm else ""
+        quotes.append(q)
+    return quotes
+
+
+def pick_quote(quotes: list[dict], day: date) -> dict | None:
+    return quotes[max((day - START).days, 0) % len(quotes)] if quotes else None
+
+
+def quote_block(q: dict | None) -> tuple[str, str]:
+    """(html, text) của khung câu truyền cảm hứng; rỗng nếu không có câu."""
+    if not q:
+        return "", ""
+    h = ('<div style="border-left:4px solid #8250df;background:#fbefff;padding:12px 16px;border-radius:6px;margin:0 0 18px">'
+         f'<div style="font-size:12px;color:#57606a">💬 {inline_html(q["group"])}</div>'
+         f'<p style="margin:4px 0;font-size:16px"><i>“{inline_html(q["quote"])}”</i></p>'
+         f'<p style="margin:4px 0">{inline_html(q["Dịch"])}</p>'
+         f'<p style="margin:4px 0;font-size:13px;color:#57606a">— {inline_html(q["Tác giả"])}</p>'
+         f'<p style="margin:8px 0 0;font-size:14px">👉 {inline_html(q["Ý cho mình"])}</p></div>')
+    t = f'💬 "{q["quote"]}"\n{q["Dịch"]}\n— {q["Tác giả"]}\n👉 {inline_text(q["Ý cho mình"])}\n'
+    return h, t
+
+
+def pick(cards: list[dict], day: date, done: int) -> list[dict]:
+    """1 thẻ của buổi gần nhất + 2 thẻ cũ để ôn, chỉ trong các thẻ đã học tới."""
+    eligible = [c for c in cards if c["lesson"] <= done]
+    if not eligible:
+        return []
     d = max((day - START).days, 0)
-    n = len(cards)
-    chosen = [cards[(PER_DAY * d + i) % n] for i in range(PER_DAY)]
-    return chosen, (PER_DAY * d) // n + 1
+    recent = [c for c in eligible if c["lesson"] >= max(done - 1, 1)] or \
+             [c for c in eligible if c["lesson"] == max(x["lesson"] for x in eligible)]
+    older = [c for c in eligible if c not in recent]
+    chosen = [recent[d % len(recent)]]
+    for i in range(2):
+        pool = older or recent
+        for k in range(len(pool)):
+            cand = pool[(2 * d + i + k) % len(pool)]
+            if cand not in chosen:
+                chosen.append(cand)
+                break
+    return chosen[:PER_DAY]
 
 
 def inline_html(s: str) -> str:
@@ -55,44 +138,79 @@ def inline_text(s: str) -> str:
     return s.replace("**", "")
 
 
-def render(cards: list[dict], day: date, round_no: int) -> dict:
+def short(title: str) -> str:
+    return title.split(" — ")[0]
+
+
+def render_reminder(day: date, next_line: str, quote: dict | None = None) -> dict:
+    subject = f"📚 AI Agents · {day:%d/%m} · {next_line.split('—')[0].strip()}"
+    lines = [
+        "Chưa có thẻ nào để ôn vì chưa xong buổi học nào có thẻ. Thẻ sẽ tới sau buổi đầu tiên.",
+        next_line,
+        "Chỉ cần một phiên mini 10–15 phút: mở Claude trong repo my-notes và gõ \"học tiếp\". Phiên mini cũng được tính vào giờ tích luỹ.",
+        "Gợi ý \"nếu… thì…\": nếu ăn tối xong mở laptop, thì gõ \"học tiếp\" trước khi mở việc khác.",
+    ]
+    qh, qt = quote_block(quote)
+    body = qh + "".join(f'<p style="margin:10px 0">{inline_html(x)}</p>' for x in lines)
+    return {"subject": subject, "html": f'<div style="{FONT}">{body}</div>', "text": "\n\n".join(([qt] if qt else []) + lines), "cards": []}
+
+
+def render(cards: list[dict], day: date, quote: dict | None = None) -> dict:
     ids = ", ".join(c["id"] for c in cards)
-    subject = f"🧠 AI Agents · {day:%d/%m} · {' · '.join(c['title'].split(' — ')[0] for c in cards)}"
+    subject = f"🧠 AI Agents · {day:%d/%m} · {' · '.join(short(c['title']) for c in cards)}"
     labels = [("Nói đơn giản", "💡"), ("Ví dụ đời thường", "🏠"), ("Trong agent email", "📧"), ("Liên tưởng SRE", "🛠️"), ("Nhớ", "📌")]
 
-    parts = [f'<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:680px;margin:auto;color:#1f2328;line-height:1.55;font-size:15px">',
-             f'<p style="color:#57606a;margin:0 0 16px">3 khái niệm hôm nay ({ids}) · vòng {round_no}. Mỗi thẻ đọc khoảng 2 phút.</p>']
-    text = [f"3 khái niệm hôm nay ({ids}) · vòng {round_no}\n"]
+    qh, qt = quote_block(quote)
+    parts = [f'<div style="{FONT}">', qh,
+             f'<p style="color:#57606a;margin:0 0 12px">{len(cards)} thẻ hôm nay ({ids}): 1 thẻ buổi gần nhất + thẻ cũ để ôn.</p>',
+             '<h2 style="font-size:18px;margin:0 0 8px">① Tự nhớ lại trước (đừng kéo xuống vội)</h2>',
+             '<p style="color:#57606a;margin:0 0 10px">Trả lời trong đầu hoặc ra giấy, rồi mới xem đáp án ở phần ②.</p><ol>']
+    text = ([qt] if qt else []) + [f"{len(cards)} thẻ hôm nay ({ids})", "", "① TỰ NHỚ LẠI TRƯỚC (đừng kéo xuống vội)"]
+    for i, c in enumerate(cards, 1):
+        parts.append(f'<li style="margin:8px 0"><b>{inline_html(short(c["title"]))}</b>: {inline_html(c["Tự kiểm tra"])}</li>')
+        text.append(f"{i}. {inline_text(short(c['title']))}: {inline_text(c['Tự kiểm tra'])}")
+    parts.append("</ol>")
+    parts.append('<div style="height:900px"></div>'
+                 '<p style="text-align:center;color:#57606a;border-top:2px dashed #d0d7de;padding-top:12px">▼ ② Đáp án và bài học ▼</p>')
+    text += ["", *["."] * 25, "", "② ĐÁP ÁN VÀ BÀI HỌC"]
     for c in cards:
         parts.append('<div style="border:1px solid #d0d7de;border-radius:8px;padding:16px 18px;margin:0 0 18px">')
         parts.append(f'<div style="font-size:12px;color:#57606a">{c["id"]} · Cấp {inline_html(c["Cấp"])}</div>'
-                     f'<h2 style="font-size:18px;margin:2px 0 12px">{inline_html(c["title"])}</h2>')
+                     f'<h3 style="font-size:17px;margin:2px 0 10px">{inline_html(c["title"])}</h3>'
+                     f'<p style="margin:6px 0"><b>❓ Tự kiểm tra:</b> {inline_html(c["Tự kiểm tra"])}</p>'
+                     f'<p style="margin:6px 0 12px;color:#1a7f37"><b>✅ Đáp:</b> {inline_html(c["Đáp"])}</p>')
         text.append(f"\n===== {c['id']} · {inline_text(c['title'])} (Cấp {inline_text(c['Cấp'])}) =====")
+        text.append(f"Tự kiểm tra: {inline_text(c['Tự kiểm tra'])}\nĐáp: {inline_text(c['Đáp'])}")
         for field, icon in labels:
             if c[field]:
                 bg = ' style="background:#fff8c5;padding:8px 10px;border-radius:6px;margin:10px 0"' if field == "Nhớ" else ' style="margin:8px 0"'
                 parts.append(f'<p{bg}><b>{icon} {field}:</b> {inline_html(c[field])}</p>')
                 text.append(f"{field}: {inline_text(c[field])}")
-        parts.append('<div style="border-top:1px dashed #d0d7de;margin-top:12px;padding-top:10px">'
-                     f'<p style="margin:6px 0"><b>❓ Tự kiểm tra:</b> {inline_html(c["Tự kiểm tra"])}</p>'
-                     f'<p style="margin:6px 0;color:#1a7f37"><b>✅ Đáp:</b> {inline_html(c["Đáp"])}</p></div>'
-                     f'<p style="font-size:12px;color:#57606a;margin:10px 0 0">Nguồn: {inline_html(c["Nguồn"])}</p></div>')
-        text.append(f"Tự kiểm tra: {inline_text(c['Tự kiểm tra'])}\nĐáp: {inline_text(c['Đáp'])}\nNguồn: {inline_text(c['Nguồn'])}")
-    footer = f'Cả bộ thẻ: <a href="{REPO_URL}">flashcards.md</a> · Học tiếp: mở Claude trong repo my-notes và gõ "học tiếp".'
+        parts.append(f'<p style="font-size:12px;color:#57606a;margin:10px 0 0">Nguồn: {inline_html(c["Nguồn"])}</p></div>')
+        text.append(f"Nguồn: {inline_text(c['Nguồn'])}")
+    footer = f'Cả bộ thẻ: <a href="{REPO_URL}">flashcards.md</a> · Học tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ "học tiếp".'
     parts.append(f'<p style="font-size:13px;color:#57606a">{footer}</p></div>')
-    text.append(f"\nCả bộ thẻ: {REPO_URL}\nHọc tiếp: mở Claude trong repo my-notes và gõ \"học tiếp\".")
+    text.append(f"\nCả bộ thẻ: {REPO_URL}\nHọc tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ \"học tiếp\".")
     return {"subject": subject, "html": "\n".join(parts), "text": "\n".join(text), "cards": [c["id"] for c in cards]}
+
+
+def build(day: date, done: int | None = None) -> dict:
+    cards = parse_deck(DECK.read_text(encoding="utf-8"))
+    learning = sorted(LEARNING_DIR.glob("ai-agents-*.md"))
+    progress_done, next_line = read_progress(learning[0].read_text(encoding="utf-8")) if learning else (0, "Buổi kế: xem learning/")
+    chosen = pick(cards, day, progress_done if done is None else done)
+    quote = pick_quote(parse_quotes(QUOTES.read_text(encoding="utf-8")) if QUOTES.exists() else [], day)
+    return render(chosen, day, quote) if chosen else render_reminder(day, next_line, quote)
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", help="YYYY-MM-DD (mặc định: hôm nay giờ Việt Nam)")
+    ap.add_argument("--done", type=int, help="giả lập số buổi đã xong (mặc định: đọc từ bảng Log)")
     ap.add_argument("--html-out", help="ghi HTML ra file để xem trước")
     args = ap.parse_args()
     day = date.fromisoformat(args.date) if args.date else datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date()
-    cards = parse_deck(DECK.read_text(encoding="utf-8"))
-    chosen, round_no = pick(cards, day)
-    out = render(chosen, day, round_no)
+    out = build(day, args.done)
     if args.html_out:
         Path(args.html_out).write_text(out["html"], encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False))

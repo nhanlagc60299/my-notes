@@ -5,16 +5,22 @@ Người học: SRE ~8 năm kinh nghiệm. Tiếng Việt, thuật ngữ kỹ th
 ## "học tiếp" / "buổi N" / "hôm nay học gì"
 
 1. Đọc file lộ trình `learning/<topic>-<N>h.md` (vd: `learning/ai-agents-40h.md`) → lấy dòng **Buổi kế** → vào thẳng bài. Không hỏi lại intake, không tóm tắt lại curriculum.
-2. Mở đầu ≤ 2 phút (mục tiêu buổi + gap buổi trước), giảng ≤ 10 phút rồi để người học gõ.
-3. Bài tập: file `topics/<topic>/lab/NN_<ten>.py` + `tests/test_NN_<ten>.py`; ưu tiên mở rộng code đang chạy. Người học sai thì chỉ đúng chỗ sai và lý do, **không đưa đáp án trước khi họ thử ít nhất một lần**.
-4. Kết buổi: thêm dòng vào bảng Log (buổi | ngày | giờ tích luỹ | pass? | gap), cập nhật dòng **Buổi kế** (file nào, lệnh nào, mục tiêu gì), đảm bảo `pytest -q` xanh, commit.
+2. **Khởi động (≤ 3 phút):** hỏi 2–3 câu tự nhớ lại lấy từ cột gap trong Log và thẻ của buổi trước; người học trả lời xong mới nói đáp án. Bước này quan trọng nhất sau những lần nghỉ dài. Sau đó nêu mục tiêu buổi, giảng ≤ 10 phút rồi để người học gõ.
+   - Người học chỉ có 10–15 phút → làm **phiên mini** (một phần của buổi), vẫn log và tính giờ.
+3. Bài tập: file `topics/<topic>/lab/NN_<ten>.py` + `tests/test_NN_<ten>.py`; ưu tiên mở rộng code đang chạy. Người học là SRE giỏi hạ tầng nhưng **mới với LLM/agent**, nên:
+   - **Khái niệm LLM/agent mới:** cho xem một **ví dụ mẫu đã giải** trước, rồi mới cho làm biến thể (expertise reversal effect: người mới học từ ví dụ mẫu tốt hơn tự mò).
+   - **Khi kẹt:** để thử tối đa ~5 phút → gợi ý từng bậc (chỉ chỗ sai, rồi hướng sửa, rồi đoạn code gần đúng) → mới đưa đáp án. Không để kẹt 20 phút.
+   - Phần thuộc Python/Linux/K8s/CI-CD thì để tự làm, chỉ chỉ chỗ sai và lý do.
+4. Kết buổi: người học **tự viết 3 câu** bằng lời của mình vào mục "Ghi chú của tôi" của note tương ứng (Claude không viết hộ, chỉ sửa chỗ sai: note viết sẵn dễ tạo ảo giác "mình hiểu rồi"). Thêm dòng vào bảng Log (buổi | ngày | giờ tích luỹ | pass? | gap; phiên mini ghi `N·mini`, pass `—`), cập nhật dòng **Buổi kế** (file nào, lệnh nào, mục tiêu gì), đảm bảo `pytest -q` xanh, commit.
 5. Buổi checkpoint: làm quiz trong `topics/<topic>/quizzes/`; câu sai thì ghi vào cột gap và thêm flashcard mới vào cuối `flashcards.md`.
 
 ## Viết flashcard
 
 - Mỗi thẻ dạy **một khái niệm** (LLM, HITL, OBO…), viết cho **người mới hoàn toàn**: giải nghĩa mọi từ viết tắt, không giả định kiến thức trước, câu đầy đủ, không viết kiểu đố mẹo hay chỉ ghi tên hàm.
 - Đúng cấu trúc trong đầu `flashcards.md` (Cấp → Nói đơn giản → Ví dụ đời thường → Trong agent email → Liên tưởng SRE → Nhớ → Tự kiểm tra → Đáp → Nguồn). Thứ tự trong file đi từ cơ bản lên nâng cao.
-- Sau khi sửa, chạy `python3 topics/ai-agents/scripts/flashcard_email.py --date <YYYY-MM-DD> --html-out /tmp/x.html` để kiểm tra thẻ parse đủ trường.
+- Trường `Nguồn` phải có `Học ở: Buổi N` đúng buổi dạy khái niệm đó: email chỉ gửi thẻ của buổi **đã học** (đọc bảng Log), gồm 1 thẻ buổi gần nhất + 2 thẻ cũ, câu hỏi ở đầu và đáp án ở cuối.
+- Câu truyền cảm hứng ở đầu email nằm trong `topics/ai-agents/quotes.md`. Chỉ thêm câu truy được nguồn gốc (sách, bài báo, email lưu trữ), không lấy từ trang tổng hợp quote, và ghi mức kiểm chứng ✅/⚠️.
+- Sau khi sửa, chạy `pytest -q` trong `topics/ai-agents/lab` (có `tests/test_flashcard_email.py`) và `python3 topics/ai-agents/scripts/flashcard_email.py --date <YYYY-MM-DD> --done <N> --html-out /tmp/x.html` để xem trước.
 
 ## Kiểm chứng (bắt buộc)
 
