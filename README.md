@@ -27,7 +27,7 @@ flowchart TB
 
 | Chủ đề | Trạng thái | Vào học |
 |---|---|---|
-| 🤖 [AI Agents](topics/ai-agents/) | 🟢 Đang học (0/40h) | [learning/ai-agents-40h.md](learning/ai-agents-40h.md) |
+| 🤖 [AI Agents](topics/ai-agents/) | 🟢 Đang học `░░░░░░░░░░ 0/40h` | [learning/ai-agents-40h.md](learning/ai-agents-40h.md) |
 | 📡 [Observability — OpenTelemetry](topics/observability-otel/) | ⏳ Chờ (sau AI Agents) | — |
 
 ## Quy tắc của repo
@@ -35,9 +35,19 @@ flowchart TB
 1. **Một chủ đề tại một thời điểm** (mỗi chủ đề là 1 hoặc nhiều khối 20h). Chủ đề mới vào hàng đợi trong [learning/README](learning/README.md).
 2. **Chỉ ghi điều đã kiểm chứng** từ docs chính thức (có link và ngày kiểm). Điều chưa kiểm thì gắn ⚠️ *chưa kiểm chứng*.
 3. **Không dữ liệu nội bộ công ty** (runbook, log, alert, email, schema thật). Chỉ dùng dữ liệu public hoặc tự tạo.
-4. **Mỗi buổi để repo ở trạng thái chạy được** (`pytest` xanh) và cập nhật dòng "Buổi kế".
+4. **Mỗi buổi để repo ở trạng thái chạy được** (`pytest -q` xanh) và cập nhật dòng "Buổi kế". Được để lại đúng **1 test đỏ có chủ đích** gắn `@pytest.mark.next` cho bước đầu tiên của buổi sau; `pytest -q` mặc định bỏ qua test đó.
 5. Sơ đồ: Mermaid ngay trong markdown (GitHub render được). Sơ đồ tương tác thì dùng [Archify](https://github.com/tt-a1i/archify), lưu HTML trong `diagrams/` kèm file JSON nguồn.
 
-## Học tiếp với Claude
+## Học tiếp
 
-Mở session mới trong repo này rồi gõ: **"học tiếp"** (hoặc "buổi N"). Claude đọc [CLAUDE.md](CLAUDE.md), tìm dòng "Buổi kế" rồi vào bài ngay.
+**Lệnh `hoc`** đưa anh vào đúng chỗ trong vài giây: `cd` vào lab của chủ đề đang học, bật `.venv`, chạy `pytest -q`, chạy riêng test đỏ `pytest -m next` (việc của hôm nay), rồi in dòng "Buổi kế", "Bước tiếp theo" và thanh tiến độ. Cài 1 lần vào `~/.zshrc` hoặc `~/.bashrc`:
+
+```sh
+hoc() { cd ~/path/to/my-notes && source scripts/hoc.sh "$@"; }
+```
+
+Dùng `source` để shell của anh giữ được `cd` và venv. Gõ `hoc` cho chủ đề 🟢, hoặc `hoc <topic>`.
+
+Rồi mở Claude ngay trong thư mục đó và gõ **"học tiếp"** (hoặc "buổi N"). Claude đọc [CLAUDE.md](CLAUDE.md), tìm dòng "Buổi kế" rồi vào bài ngay. Chỉ có 10–15 phút thì vẫn làm: phiên mini cũng tính giờ.
+
+Tiến độ đo bằng **giờ tích luỹ** (`python3 scripts/progress.py`), không đếm chuỗi ngày liên tục.

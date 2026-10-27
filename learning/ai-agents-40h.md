@@ -5,7 +5,11 @@
 - *Reliability, SLOs, and Incident Management for GenAI Systems* → [references/genai-reliability-slo-review.md](../topics/ai-agents/references/genai-reliability-slo-review.md).
 - *GenAI Model Access Layer and Structured Outputs* → [references/genai-model-access-structured-outputs-review.md](../topics/ai-agents/references/genai-model-access-structured-outputs-review.md). Khoá này bổ sung cho **Phần A** (buổi 2, 3, 7, 10, 12, 21, 23) và buổi 49, 52 mà không tăng giờ; xem bảng "Áp vào lab" trong file review. Phần SLO dashboard / burn-rate alert / postmortem metrics để dành cho chủ đề kế tiếp (Observability & Reliability), vì cần stack Prometheus + Grafana + OTel.
 
-> **Buổi kế: 1** — `cd topics/ai-agents/lab && pytest -q` (setup xem [lab/README](../topics/ai-agents/lab/README.md)) → chạy `python 01_hello_brain.py` → mục tiêu: thấy agent phân loại 5 email, rồi đổi sang `LLM_BACKEND=ollama`.
+> **Buổi kế: 1** — gõ `hoc` (lần đầu setup theo [lab/README](../topics/ai-agents/lab/README.md)) → chạy `python 01_hello_brain.py` → mục tiêu: thấy agent phân loại 5 email, rồi đổi sang `LLM_BACKEND=ollama`.
+>
+> **Bước tiếp theo:** làm xanh `pytest -m next`: thêm vào `SYSTEM_PROMPT` một dòng mô tả cho mỗi nhãn.
+
+**Tiến độ:** `░░░░░░░░░░ 0/40h` (giờ tích luỹ, không đếm chuỗi ngày)
 
 | | |
 |---|---|
@@ -265,7 +269,7 @@ ollama pull embeddinggemma                # model embedding dùng trong docs Oll
 
 ## Log
 
-Phiên mini ghi thành dòng riêng với cột Buổi dạng `N·mini` (vd: `3·mini`), cột Pass để `—`; chỉ dòng có ✅ mới được tính là "đã xong buổi" (email flashcard dựa vào đây để biết gửi thẻ nào).
+Mỗi dòng Log cần ngày `YYYY-MM-DD`: email hằng ngày dựa vào ngày của dòng cuối để biết anh có đang chững lại không. Phiên mini ghi thành dòng riêng với cột Buổi dạng `N·mini` (vd: `3·mini`), cột Pass để `—`; chỉ dòng có ✅ mới được tính là "đã xong buổi" (email flashcard dựa vào đây để biết gửi thẻ nào).
 
 | Buổi | Ngày | Giờ tích luỹ | Pass? | Gap / ghi chú |
 |---|---|---|---|---|
