@@ -1,0 +1,283 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Email Triage Agent — 8 mảnh ghép",
+    "locale": "vi",
+    "quality_profile": "showcase",
+    "output": "topics/ai-agents/diagrams/email-triage-agent.html"
+  },
+  "lanes": [
+    {
+      "id": "inbox",
+      "label": "Inbox"
+    },
+    {
+      "id": "guard",
+      "label": "🛡️ Guardrails",
+      "variant": "exception"
+    },
+    {
+      "id": "ops",
+      "label": "📊 Observability · 💸 Cost"
+    },
+    {
+      "id": "agent",
+      "label": "🧠 Brain · 🗺️ Planning"
+    },
+    {
+      "id": "tools",
+      "label": "🛠️ Tools · 💾 Memory"
+    },
+    {
+      "id": "human",
+      "label": "🔄 Environment (người duyệt + hệ thống ngoài)"
+    }
+  ],
+  "groups": [
+    {
+      "id": "loop",
+      "label": "Vòng ReAct + Reflexion",
+      "lane": "agent",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "email",
+    "shield",
+    "llm",
+    "react",
+    "verify",
+    "hitl",
+    "ticket"
+  ],
+  "nodes": [
+    {
+      "id": "email",
+      "lane": "inbox",
+      "col": 0,
+      "type": "external",
+      "label": "Email đến",
+      "sublabel": "input không tin cậy"
+    },
+    {
+      "id": "shield",
+      "lane": "guard",
+      "col": 1,
+      "type": "security",
+      "label": "Injection shield",
+      "sublabel": "tách data / lệnh",
+      "tag": "LLM01"
+    },
+    {
+      "id": "quarantine",
+      "lane": "guard",
+      "col": 0,
+      "type": "security",
+      "label": "Quarantine",
+      "sublabel": "chờ người xem"
+    },
+    {
+      "id": "llm",
+      "lane": "agent",
+      "col": 2,
+      "type": "backend",
+      "label": "LLM · Ollama",
+      "sublabel": "qwen3 · format=schema"
+    },
+    {
+      "id": "react",
+      "lane": "agent",
+      "col": 3,
+      "type": "backend",
+      "label": "ReAct loop",
+      "sublabel": "reason → act → observe"
+    },
+    {
+      "id": "memory",
+      "lane": "tools",
+      "col": 2,
+      "type": "database",
+      "label": "Memory",
+      "sublabel": "thread · store · RAG"
+    },
+    {
+      "id": "tools",
+      "lane": "tools",
+      "col": 3,
+      "type": "messagebus",
+      "label": "Tool calls",
+      "sublabel": "lookup_runbook · MCP",
+      "tag": "allow-list"
+    },
+    {
+      "id": "verify",
+      "lane": "guard",
+      "col": 4,
+      "type": "security",
+      "label": "Output verify",
+      "sublabel": "schema · redact PII",
+      "tag": "LLM02 · LLM10"
+    },
+    {
+      "id": "hitl",
+      "lane": "human",
+      "col": 4,
+      "type": "external",
+      "label": "Người duyệt",
+      "sublabel": "interrupt() → resume"
+    },
+    {
+      "id": "ticket",
+      "lane": "human",
+      "col": 5,
+      "type": "cloud",
+      "label": "create_ticket",
+      "sublabel": "side-effect duy nhất"
+    },
+    {
+      "id": "budget",
+      "lane": "ops",
+      "col": 2,
+      "type": "security",
+      "label": "Budget",
+      "sublabel": "recursion_limit · token",
+      "tag": "LLM06"
+    },
+    {
+      "id": "trace",
+      "lane": "ops",
+      "col": 3,
+      "type": "database",
+      "label": "Trace JSONL",
+      "sublabel": "stream_mode=updates → eval gate"
+    }
+  ],
+  "edges": [
+    {
+      "id": "email-shield",
+      "from": "email",
+      "to": "shield",
+      "variant": "default"
+    },
+    {
+      "id": "shield-llm",
+      "from": "shield",
+      "to": "llm",
+      "label": "sạch",
+      "variant": "emphasis"
+    },
+    {
+      "id": "shield-quarantine",
+      "from": "shield",
+      "to": "quarantine",
+      "label": "nghi ngờ",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "llm-react",
+      "from": "llm",
+      "to": "react",
+      "variant": "emphasis"
+    },
+    {
+      "id": "memory-llm",
+      "from": "memory",
+      "to": "llm",
+      "label": "context",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "react-tools",
+      "from": "react",
+      "to": "tools",
+      "label": "tool_calls ⇄ kết quả",
+      "variant": "default",
+      "role": "branch"
+    },
+    {
+      "id": "react-verify",
+      "from": "react",
+      "to": "verify",
+      "label": "đề xuất",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "bottom"
+    },
+    {
+      "id": "verify-retry",
+      "from": "verify",
+      "to": "react",
+      "label": "sai → sửa",
+      "variant": "dashed",
+      "role": "return"
+    },
+    {
+      "id": "verify-hitl",
+      "from": "verify",
+      "to": "hitl",
+      "label": "cần hành động",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "id": "hitl-ticket",
+      "from": "hitl",
+      "to": "ticket",
+      "label": "approve",
+      "variant": "emphasis"
+    },
+    {
+      "id": "budget-llm",
+      "from": "budget",
+      "to": "llm",
+      "label": "dừng cứng",
+      "variant": "security",
+      "role": "branch"
+    },
+    {
+      "id": "react-trace",
+      "from": "react",
+      "to": "trace",
+      "label": "mỗi bước",
+      "variant": "dashed",
+      "role": "async"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Tầng Vận hành (15h)",
+      "items": [
+        "Brain: LLM + structured output",
+        "Tools: tool calling, agent loop, MCP",
+        "Planning: ReAct graph + Reflexion",
+        "Memory: checkpointer, store, RAG",
+        "Environment: HITL + router đa agent"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Tầng Hệ thống (3.75h)",
+      "items": [
+        "Guardrails: shield, allow-list, verify output",
+        "Observability & Evals: trace JSONL + golden set",
+        "Cost: recursion_limit, RemainingSteps, token"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Nguyên tắc",
+      "items": [
+        "Email = input không tin cậy (OWASP LLM01:2026)",
+        "Chỉ create_ticket có side-effect, luôn qua người duyệt",
+        "Mọi bước đều có trace và có trần"
+      ]
+    }
+  ]
+}
