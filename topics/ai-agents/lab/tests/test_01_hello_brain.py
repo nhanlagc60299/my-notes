@@ -1,4 +1,7 @@
 import importlib
+import re
+
+import pytest
 
 from llm import FakeLLM
 
@@ -31,3 +34,11 @@ def test_classify_sends_system_prompt_and_email_to_model():
 def test_keyword_baseline_gets_obvious_alert_right():
     alert = lesson.load_emails()[0]
     assert lesson.classify(alert, FakeLLM()) == "alert"
+
+
+@pytest.mark.next
+def test_system_prompt_explains_each_category():
+    """Bước đầu buổi 1: model mới chỉ thấy tên nhãn, chưa biết "vendor" hay "phishing" nghĩa là gì.
+    Sửa SYSTEM_PROMPT để mỗi nhãn có một dòng "- <nhãn>: <mô tả>". Xanh rồi thì xoá dòng @pytest.mark.next."""
+    for cat in lesson.CATEGORIES:
+        assert re.search(rf"^- {cat}: \S+", lesson.SYSTEM_PROMPT, flags=re.M), f"thiếu mô tả cho nhãn {cat}"

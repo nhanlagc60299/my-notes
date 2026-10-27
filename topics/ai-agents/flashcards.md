@@ -1,6 +1,6 @@
 # Flashcards — AI Agents: từ điển khái niệm, từ số 0 đến nâng cao
 
-Mỗi sáng một scheduled task gửi **3 thẻ** qua Gmail, chỉ lấy thẻ của các buổi **đã học** (theo bảng Log): 1 thẻ buổi gần nhất cộng 2 thẻ cũ để ôn. Câu hỏi nằm ở đầu email, đáp án ở cuối. Bộ thẻ đi từ **Cấp 1** (chưa biết gì) lên **Cấp 7** (model access & output có cấu trúc).
+Mỗi sáng một scheduled task gửi **3 thẻ** qua Gmail, chỉ lấy thẻ của các buổi **đã học** (theo bảng Log): 1 thẻ buổi gần nhất cộng 2 thẻ cũ để ôn. Câu hỏi nằm ở đầu email, đáp án ở cuối. Nếu bảng Log im lặng quá 3 ngày thì không gửi thẻ mà chỉ gửi 1 dòng nhắc "Buổi kế", lặp lại mỗi 3 ngày. Bộ thẻ đi từ **Cấp 1** (chưa biết gì) lên **Cấp 7** (model access & output có cấu trúc).
 
 Mỗi thẻ dạy **một khái niệm**, viết cho người mới hoàn toàn: thuật ngữ viết tắt được giải nghĩa, không giả định kiến thức trước, có ví dụ đời thường. Đọc một thẻ mất khoảng 2 phút.
 

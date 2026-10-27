@@ -2,17 +2,22 @@
 
     python topics/ai-agents/scripts/flashcard_email.py              # hôm nay (Asia/Ho_Chi_Minh)
     python topics/ai-agents/scripts/flashcard_email.py --date 2026-10-28 --html-out /tmp/preview.html
-    python topics/ai-agents/scripts/flashcard_email.py --done 10    # giả lập đã xong buổi 10
+    python topics/ai-agents/scripts/flashcard_email.py --done 10    # giả lập đã xong buổi 10 (bỏ qua kiểm tra chững)
 
-In ra JSON {subject, html, text, cards}. Scheduled task chạy script này rồi gửi
-`html` (kèm `text` làm bản plain-text) qua Gmail — không tự soạn lại nội dung.
+In ra JSON {send, subject, html, text, cards, reason}. Scheduled task chạy script này;
+`send` = true thì gửi `html` (kèm `text` làm bản plain-text) qua Gmail, không tự soạn lại
+nội dung; `send` = false thì không gửi gì.
 
 Nguyên tắc (retrieval practice + spacing):
 - Chỉ gửi thẻ của buổi **đã học** (đọc bảng Log trong learning/ai-agents-*.md).
   Buổi của thẻ = số buổi nhỏ nhất trong "Học ở:" ở trường Nguồn.
 - Mỗi ngày: 1 thẻ của buổi gần nhất + 2 thẻ cũ để ôn (xoay vòng theo ngày).
 - Câu hỏi ở đầu email, toàn bộ nội dung + đáp án ở cuối: tự nhớ lại trước khi xem.
-- Chưa học buổi nào có thẻ → gửi email nhắc "Buổi kế" thay vì thẻ.
+- Nhắc khi chững, không nhắc hằng ngày: nếu dòng cuối của Log cũ hơn 3 ngày thì
+  chỉ gửi 1 dòng "Buổi kế … (~15 phút) — gõ `hoc`", lặp lại mỗi 3 ngày (giống
+  `for: 3d` + `repeat_interval: 3d` của alert). Đây là thiết kế theo kiểu cảnh báo
+  SRE, không có nghiên cứu riêng kiểm chứng.
+- Không chững nhưng chưa có thẻ nào để ôn → không gửi gì.
 - Đầu email là 1 câu truyền cảm hứng trong quotes.md (xoay vòng theo ngày).
 """
 from __future__ import annotations
@@ -31,6 +36,8 @@ QUOTES = TOPIC / "quotes.md"
 LEARNING_DIR = TOPIC.parent.parent / "learning"
 START = date(2026, 10, 28)
 PER_DAY = 3
+STALL_DAYS = 3    # Log im lặng quá số ngày này thì coi là chững
+REPEAT_DAYS = 3   # đang chững thì nhắc lại sau mỗi chừng này ngày
 LAST_LESSON = 56  # thẻ không gắn buổi cụ thể (tham khảo, chủ đề sau) chỉ gửi khi xong lộ trình
 FIELDS = ["Cấp", "Nói đơn giản", "Ví dụ đời thường", "Trong agent email", "Liên tưởng SRE", "Nhớ", "Tự kiểm tra", "Đáp", "Nguồn"]
 REPO_URL = "https://github.com/nhanlagc60299/my-notes/blob/main/topics/ai-agents/flashcards.md"
@@ -72,6 +79,21 @@ def read_progress(learning_text: str) -> tuple[int, str]:
     nm = re.search(r"^> \*\*Buổi kế:\s*(.+?)\*\*\s*(.*)$", learning_text, flags=re.M)
     next_line = f"Buổi kế: {nm.group(1).strip()} {nm.group(2).strip()}".strip() if nm else "Buổi kế: xem learning/"
     return done, re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", next_line)
+
+
+def last_activity(learning_text: str) -> date | None:
+    """Ngày mới nhất trong bảng Log (cả dòng phiên mini)."""
+    log = learning_text.split("## Log", 1)[-1].split("\n## ", 1)[0]
+    days = [date.fromisoformat(d) for d in re.findall(r"^\|[^|\n]*\|\s*(\d{4}-\d{2}-\d{2})\s*\|", log, flags=re.M)]
+    return max(days) if days else None
+
+
+def stall_reminder_due(day: date, last: date | None) -> bool | None:
+    """None = chưa chững; True = chững và hôm nay đến lượt nhắc; False = chững nhưng chưa tới lượt nhắc lại."""
+    idle = (day - last).days if last else 0
+    if idle <= STALL_DAYS:
+        return None
+    return (idle - STALL_DAYS - 1) % REPEAT_DAYS == 0
 
 
 def parse_quotes(text: str) -> list[dict]:
@@ -142,17 +164,17 @@ def short(title: str) -> str:
     return title.split(" — ")[0]
 
 
-def render_reminder(day: date, next_line: str, quote: dict | None = None) -> dict:
-    subject = f"📚 AI Agents · {day:%d/%m} · {next_line.split('—')[0].strip()}"
-    lines = [
-        "Chưa có thẻ nào để ôn vì chưa xong buổi học nào có thẻ. Thẻ sẽ tới sau buổi đầu tiên.",
-        next_line,
-        "Chỉ cần một phiên mini 10–15 phút: mở Claude trong repo my-notes và gõ \"học tiếp\". Phiên mini cũng được tính vào giờ tích luỹ.",
-        "Gợi ý \"nếu… thì…\": nếu ăn tối xong mở laptop, thì gõ \"học tiếp\" trước khi mở việc khác.",
-    ]
-    qh, qt = quote_block(quote)
-    body = qh + "".join(f'<p style="margin:10px 0">{inline_html(x)}</p>' for x in lines)
-    return {"subject": subject, "html": f'<div style="{FONT}">{body}</div>', "text": "\n\n".join(([qt] if qt else []) + lines), "cards": []}
+def skip(reason: str) -> dict:
+    return {"send": False, "reason": reason, "subject": "", "html": "", "text": "", "cards": []}
+
+
+def render_stall(next_line: str) -> dict:
+    """Đúng một dòng: không trách, không đếm số ngày đã nghỉ, chỉ chỉ ra bước nhỏ nhất."""
+    head = next_line.split("—")[0].strip()
+    line = f"{head} (~15 phút) — gõ `hoc`, rồi \"học tiếp\"."
+    return {"send": True, "reason": "stall", "subject": f"⏰ AI Agents · {head} (~15 phút)",
+            "html": f'<div style="{FONT}"><p style="margin:10px 0">{inline_html(line)}</p></div>',
+            "text": inline_text(line), "cards": []}
 
 
 def render(cards: list[dict], day: date, quote: dict | None = None) -> dict:
@@ -191,16 +213,23 @@ def render(cards: list[dict], day: date, quote: dict | None = None) -> dict:
     footer = f'Cả bộ thẻ: <a href="{REPO_URL}">flashcards.md</a> · Học tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ "học tiếp".'
     parts.append(f'<p style="font-size:13px;color:#57606a">{footer}</p></div>')
     text.append(f"\nCả bộ thẻ: {REPO_URL}\nHọc tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ \"học tiếp\".")
-    return {"subject": subject, "html": "\n".join(parts), "text": "\n".join(text), "cards": [c["id"] for c in cards]}
+    return {"send": True, "reason": "cards", "subject": subject, "html": "\n".join(parts), "text": "\n".join(text), "cards": [c["id"] for c in cards]}
 
 
 def build(day: date, done: int | None = None) -> dict:
     cards = parse_deck(DECK.read_text(encoding="utf-8"))
     learning = sorted(LEARNING_DIR.glob("ai-agents-*.md"))
-    progress_done, next_line = read_progress(learning[0].read_text(encoding="utf-8")) if learning else (0, "Buổi kế: xem learning/")
+    text = learning[0].read_text(encoding="utf-8") if learning else ""
+    progress_done, next_line = read_progress(text) if text else (0, "Buổi kế: xem learning/")
+    if done is None:  # --done là giả lập để xem trước, nên bỏ qua kiểm tra chững
+        due = stall_reminder_due(day, last_activity(text))
+        if due is not None:
+            return render_stall(next_line) if due else skip("đang chững, chưa tới lượt nhắc lại")
     chosen = pick(cards, day, progress_done if done is None else done)
+    if not chosen:
+        return skip("chưa xong buổi nào có thẻ")
     quote = pick_quote(parse_quotes(QUOTES.read_text(encoding="utf-8")) if QUOTES.exists() else [], day)
-    return render(chosen, day, quote) if chosen else render_reminder(day, next_line, quote)
+    return render(chosen, day, quote)
 
 
 def main() -> None:
@@ -211,7 +240,7 @@ def main() -> None:
     args = ap.parse_args()
     day = date.fromisoformat(args.date) if args.date else datetime.now(ZoneInfo("Asia/Ho_Chi_Minh")).date()
     out = build(day, args.done)
-    if args.html_out:
+    if args.html_out and out["send"]:
         Path(args.html_out).write_text(out["html"], encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False))
 
