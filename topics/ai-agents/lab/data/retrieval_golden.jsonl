@@ -1,0 +1,12 @@
+{"id": "q01", "query": "Pod payments-api restart liên tục, CrashLoopBackOff", "expected_runbook": "KubePodCrashLooping"}
+{"id": "q02", "query": "container keeps dying and kubernetes restarts it automatically", "expected_runbook": "KubePodCrashLooping"}
+{"id": "q03", "query": "ổ đĩa /var trên node sắp đầy trong vài giờ tới", "expected_runbook": "NodeFilesystemSpaceFillingUp"}
+{"id": "q04", "query": "node filesystem predicted to run out of space", "expected_runbook": "NodeFilesystemSpaceFillingUp"}
+{"id": "q05", "query": "PVC của postgres đã dùng 91% dung lượng", "expected_runbook": "KubePersistentVolumeFillingUp"}
+{"id": "q06", "query": "persistent volume claim almost full in namespace db", "expected_runbook": "KubePersistentVolumeFillingUp"}
+{"id": "q07", "query": "deployment search-api không đủ số replica như mong muốn", "expected_runbook": "KubeDeploymentReplicasMismatch"}
+{"id": "q08", "query": "replicas available do not match desired replicas for a long time", "expected_runbook": "KubeDeploymentReplicasMismatch"}
+{"id": "q09", "query": "Prometheus không scrape được exporter billing, target down", "expected_runbook": "TargetDown"}
+{"id": "q10", "query": "monitoring targets are unreachable", "expected_runbook": "TargetDown"}
+{"id": "q11", "query": "Alertmanager gửi thông báo sang Slack bị lỗi", "expected_runbook": "AlertmanagerFailedToSendAlerts"}
+{"id": "q12", "query": "notifications from alertmanager failing to integration", "expected_runbook": "AlertmanagerFailedToSendAlerts"}
