@@ -12,12 +12,13 @@ pytest -q                      # phải xanh NGAY, không cần Ollama (dùng Fa
 
 # LLM thật (chạy local, dữ liệu không rời máy):
 #   cài Ollama: https://ollama.com/download
-ollama pull qwen3              # model dùng trong docs tool-calling chính thức của Ollama
+ollama pull gemma4             # hoặc tag Gemma 4 anh đã có; đổi bằng OLLAMA_MODEL=<tag>
 LLM_BACKEND=ollama python 01_hello_brain.py
 ```
 
-Máy yếu? Đặt `OLLAMA_MODEL=<model nhỏ hơn có hỗ trợ tools>` — kiểm tra tag trên
-<https://ollama.com/search?c=tools> trước khi pull (chưa kiểm chứng tag cụ thể từ container học).
+**Vì sao Gemma 4** (kiểm chứng 2026-10-28 trên source Ollama): parser `model/parsers/gemma4.go` có `HasToolSupport() = true`; docs Structured Outputs dùng chính `gemma4` làm ví dụ. Thinking tuỳ biến thể (`HasThinkingSupport` theo từng model), nên kiểm ở buổi 10.
+Đang có tag khác (vd: `gemma4:e4b`)? Đặt `OLLAMA_MODEL=gemma4:e4b`. ⚠️ Chưa kiểm chứng: danh sách tag/kích thước trên ollama.com (container học bị chặn domain này), nên xem bằng `ollama list` trên máy anh.
+Embeddings (buổi 16): docs Ollama dùng `embeddinggemma`.
 
 ## Cấu trúc
 

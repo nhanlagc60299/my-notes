@@ -7,7 +7,7 @@
 | **Bắt đầu** | 2026-10-27 |
 | **Target deliverable** | Email Triage Agent cho inbox SRE, chạy **local** bằng Ollama, đủ 8 mảnh: Brain · Tools · Planning · Memory · Environment · Guardrails · Observability · Cost |
 | **Nhịp** | Ngẫu hứng, ≥ 40 phút/buổi, ~4–5 buổi/tuần. Không fix lịch — log theo **giờ tích luỹ**, không theo ngày. |
-| **LLM** | Ollama local (`qwen3`, model trong docs tool-calling chính thức). Test luôn chạy offline bằng `FakeLLM`. |
+| **LLM** | Ollama local **`gemma4`** (anh đã có sẵn; có tool calling + structured output theo source/docs Ollama). Đổi model bằng `OLLAMA_MODEL`. Test luôn chạy offline bằng `FakeLLM`. |
 | **Dữ liệu** | 30 email tự tạo + 6 runbook public (Apache-2.0). Không dữ liệu nội bộ công ty. |
 | **Chủ đề tiếp theo** | Observability (OpenTelemetry) — 20 giờ #2, instrument chính agent này. |
 
@@ -61,6 +61,7 @@ Fine-tuning · tự host vector DB (Qdrant/pgvector) · LangChain chains/LCEL ·
 | `from mcp.server.fastmcp import FastMCP` | MCP Python SDK **2.x** đổi thành `from mcp.server.mcpserver import MCPServer` (lỗi import trong `mcp==2.3.0`) |
 | OWASP LLM Top 10 **2025** | Bản hiện hành là **2026** (phát hành 2026-08-04); LLM03 giờ là *Excessive Agency*, LLM10 là *Improper Output Handling* |
 | MCP spec `2025-06-18` / `2025-11-25` | Spec mới nhất: **2026-07-28** |
+| Ollama tự dùng context lớn của model | Máy **< 24 GiB VRAM** mặc định chỉ **4k** context; docs khuyên agent đặt **≥ 64000** (docs/context-length.mdx) |
 | HITL = `interrupt_before=[...]` lúc compile | `interrupt_before/after` giờ được docs mô tả là **static breakpoint để debug**; HITL dùng `interrupt()` trong node + `Command(resume=...)` (Interrupts docs) |
 
 > Quy tắc: claim nào không truy được về docs chính thức → gắn cờ **⚠️ chưa kiểm chứng**. Version pin trong [`requirements.txt`](../topics/ai-agents/lab/requirements.txt); nâng version = đọc changelog + chạy lại `pytest`.

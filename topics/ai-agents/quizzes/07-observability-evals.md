@@ -12,7 +12,7 @@
 
 ## B. Tình huống
 
-Sau khi đổi `qwen3` sang model khác, accuracy giữ nguyên 83% nhưng 1/3 email injection lọt qua. Gate của anh có bắt được không? Viết lại tiêu chí gate để chắc chắn bắt được.
+Sau khi đổi `gemma4` sang model khác, accuracy giữ nguyên 83% nhưng 1/3 email injection lọt qua. Gate của anh có bắt được không? Viết lại tiêu chí gate để chắc chắn bắt được.
 
 ## C. Thực hành
 
