@@ -41,6 +41,7 @@ REPEAT_DAYS = 3   # đang chững thì nhắc lại sau mỗi chừng này ngày
 LAST_LESSON = 56  # thẻ không gắn buổi cụ thể (tham khảo, chủ đề sau) chỉ gửi khi xong lộ trình
 FIELDS = ["Cấp", "Nói đơn giản", "Ví dụ đời thường", "Trong agent email", "Liên tưởng SRE", "Nhớ", "Tự kiểm tra", "Đáp", "Nguồn"]
 REPO_URL = "https://github.com/nhanlagc60299/my-notes/blob/main/topics/ai-agents/flashcards.md"
+NOTEBOOK_URL = "https://github.com/nhanlagc60299/my-notes/tree/main/topics/ai-agents/notebook"
 FONT = "font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:680px;margin:auto;color:#1f2328;line-height:1.55;font-size:15px"
 
 
@@ -210,9 +211,9 @@ def render(cards: list[dict], day: date, quote: dict | None = None) -> dict:
                 text.append(f"{field}: {inline_text(c[field])}")
         parts.append(f'<p style="font-size:12px;color:#57606a;margin:10px 0 0">Nguồn: {inline_html(c["Nguồn"])}</p></div>')
         text.append(f"Nguồn: {inline_text(c['Nguồn'])}")
-    footer = f'Cả bộ thẻ: <a href="{REPO_URL}">flashcards.md</a> · Học tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ "học tiếp".'
+    footer = f'Cả bộ thẻ: <a href="{REPO_URL}">flashcards.md</a> · Rảnh thì ôn <a href="{NOTEBOOK_URL}">sổ ôn tập</a> (câu ❌ trước) · Học tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ "học tiếp".'
     parts.append(f'<p style="font-size:13px;color:#57606a">{footer}</p></div>')
-    text.append(f"\nCả bộ thẻ: {REPO_URL}\nHọc tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ \"học tiếp\".")
+    text.append(f"\nCả bộ thẻ: {REPO_URL}\nSổ ôn tập (câu ❌ trước): {NOTEBOOK_URL}\nHọc tiếp (phiên mini 10–15 phút cũng tính): mở Claude trong repo my-notes và gõ \"học tiếp\".")
     return {"send": True, "reason": "cards", "subject": subject, "html": "\n".join(parts), "text": "\n".join(text), "cards": [c["id"] for c in cards]}
 
 

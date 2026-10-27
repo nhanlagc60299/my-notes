@@ -12,14 +12,14 @@ flowchart TB
     R --> T[topics/<br/>kiến thức theo chủ đề]
     R --> P[processes/<br/>quy trình đã học]
     R --> TP[templates/]
-    T --> A[ai-agents/<br/>notes · lab · quizzes · flashcards · diagrams]
+    T --> A[ai-agents/<br/>notes · lab · quizzes · notebook · flashcards · diagrams]
     T --> O[observability-otel/<br/>⏳ chủ đề kế tiếp]
 ```
 
 | Thư mục | Chứa gì | Khi nào thêm vào |
 |---|---|---|
 | [`learning/`](learning/) | Lộ trình (khối 20h) của từng chủ đề, log từng buổi, retro | Mỗi khi bắt đầu/kết thúc một buổi học |
-| [`topics/<chủ-đề>/`](topics/) | `notes/` khái niệm · `lab/` code chạy được · `quizzes/` bài test theo chặng · `flashcards.md` · `diagrams/` | Học xong một khái niệm, có một bài lab mới |
+| [`topics/<chủ-đề>/`](topics/) | `notes/` khái niệm · `lab/` code chạy được · `quizzes/` bài test theo chặng · `notebook/` **sổ ôn tập** (ghi lại mọi lần kiểm tra, đáp án giấu để tự ôn) · `flashcards.md` · `diagrams/` | Học xong một khái niệm, có một bài lab mới |
 | [`processes/`](processes/) | Quy trình (incident, postmortem, release, on-call…) dạng **template/public** | Học được một quy trình đáng tái sử dụng |
 | [`templates/`](templates/) | Khung cho note / process | Copy khi tạo file mới |
 
